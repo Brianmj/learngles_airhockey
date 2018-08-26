@@ -16,6 +16,7 @@ class AirHockeyActivity : AppCompatActivity(){
 
         surfaceView = myGLView
 
+
     }
 
     override fun onResume() {
