@@ -47,7 +47,9 @@ class AirHockeyRenderer(ctx: Context) : GLSurfaceView.Renderer
                 0.5f, 0f,
 
                 0f, -0.25f,         // mallets
-                0f, 0.25f)
+                0f, 0.25f,
+
+                0f, 0f)             // puck
 
         vertexData = ByteBuffer.allocateDirect(tableVertices.size * BYTES_PER_FLOAT)
                 .order(ByteOrder.nativeOrder())
@@ -80,6 +82,10 @@ class AirHockeyRenderer(ctx: Context) : GLSurfaceView.Renderer
         // draw the second mallet red
         GLES31.glProgramUniform4f(programObject, 8, 1f, 0f, 0f, 1f)
         GLES20.glDrawArrays(GLES20.GL_POINTS, 9, 1)
+
+        // draw the black puck
+        glProgramUniform4f(programObject, 8, 0f, 0f, 0f, 1f)
+        GLES20.glDrawArrays(GLES20.GL_POINTS, 10, 1)
 
 
     }
