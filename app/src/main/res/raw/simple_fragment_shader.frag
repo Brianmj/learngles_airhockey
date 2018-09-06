@@ -2,9 +2,9 @@
 
 precision mediump float;
 
-layout(location = 8) uniform vec4 u_color;
+in vec3 out_color;
 out vec4 color;
 
 void main() {
-    color = u_color;
+    color = vec4(out_color, 1.0f);
 }

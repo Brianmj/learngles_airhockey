@@ -27,8 +27,12 @@ class AirHockeyRenderer(ctx: Context) : GLSurfaceView.Renderer
     lateinit var airHockeyProgramId: UUID
 
     companion object {
+        val POSITION_ATTRIBUTE_INDEX = 0
+        val COLOR_ATTRIBUTE_INDEX = 3
         val POSITION_COMPONENT_COUNT = 2
+        val COLOR_COMPONENT_COUNT = 3
         val BYTES_PER_FLOAT = 4
+        val STRIDE = (POSITION_COMPONENT_COUNT + COLOR_COMPONENT_COUNT) * BYTES_PER_FLOAT
     }
 
     lateinit var vertexData: FloatBuffer
@@ -51,11 +55,29 @@ class AirHockeyRenderer(ctx: Context) : GLSurfaceView.Renderer
 
                 0f, 0f)             // puck
 
-        vertexData = ByteBuffer.allocateDirect(tableVertices.size * BYTES_PER_FLOAT)
+        val tableVerticesWithTriangle = floatArrayOf(
+                // x, y, rgb
+                0.0f, 0.0f,     1f, 1f, 1f,
+                -0.5f, -0.5f,   0.7f, 0.7f, 0.7f,
+                0.5f, -0.5f,    0.7f, 0.7f, 0.7f,
+                0.5f, 0.5f,     0.7f, 0.7f, 0.7f,
+                -0.5f, 0.5f,    0.7f, 0.7f, 0.7f,
+                -0.5f, -0.5f,   0.7f, 0.7f, 0.7f,
+
+                -0.5f, 0f,       1f, 0f, 0f,   // line 1
+                0.5f, 0f,        1f, 0f, 0f,
+
+                0f, -0.25f,       0f, 0f, 1f,// mallets
+                0f, 0.25f,        1f, 0f, 0f,
+
+                0f, 0f,           0f, 0f, 0f  // puck
+        )
+
+        vertexData = ByteBuffer.allocateDirect(tableVerticesWithTriangle.size * BYTES_PER_FLOAT)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer()
 
-        vertexData.put(tableVertices).flip()
+        vertexData.put(tableVerticesWithTriangle).flip()
     }
 
     override fun onDrawFrame(gl: GL10?) {
@@ -64,27 +86,27 @@ class AirHockeyRenderer(ctx: Context) : GLSurfaceView.Renderer
 
         val programObject = shaderManager.retrieveProgram(airHockeyProgramId)
         // set the fragment output to white
-        GLES31.glProgramUniform4f(programObject,
-                8, 1f, 1f, 1f, 1f)
+       // GLES31.glProgramUniform4f(programObject,
+       //         8, 1f, 1f, 1f, 1f)
 
         // draw the board
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 6)
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 6)
 
-        GLES31.glProgramUniform4f(programObject,
-                8, 1f, 0f, 0f, 1f)
+        //GLES31.glProgramUniform4f(programObject,
+        //        8, 1f, 0f, 0f, 1f)
         // draw the red divider line
         GLES20.glDrawArrays(GLES20.GL_LINES, 6, 2)
 
         // draw the first mallet blue
-        GLES31.glProgramUniform4f(programObject, 8, 0f, 0f, 1f, 1f)
+        //GLES31.glProgramUniform4f(programObject, 8, 0f, 0f, 1f, 1f)
         GLES20.glDrawArrays(GLES20.GL_POINTS, 8, 1)
 
         // draw the second mallet red
-        GLES31.glProgramUniform4f(programObject, 8, 1f, 0f, 0f, 1f)
+        //GLES31.glProgramUniform4f(programObject, 8, 1f, 0f, 0f, 1f)
         GLES20.glDrawArrays(GLES20.GL_POINTS, 9, 1)
 
         // draw the black puck
-        glProgramUniform4f(programObject, 8, 0f, 0f, 0f, 1f)
+        //glProgramUniform4f(programObject, 8, 0f, 0f, 0f, 1f)
         GLES20.glDrawArrays(GLES20.GL_POINTS, 10, 1)
 
 
@@ -101,9 +123,15 @@ class AirHockeyRenderer(ctx: Context) : GLSurfaceView.Renderer
         glUseProgram(shaderManager.retrieveProgram(airHockeyProgramId))
 
         vertexData.position(0)
-        GLES20.glVertexAttribPointer(0, POSITION_COMPONENT_COUNT, GLES20.GL_FLOAT, false,
-                0, vertexData)
-        GLES20.glEnableVertexAttribArray(0)
+        GLES20.glVertexAttribPointer(POSITION_ATTRIBUTE_INDEX, POSITION_COMPONENT_COUNT, GLES20.GL_FLOAT, false,
+                STRIDE, vertexData)
+
+        vertexData.position(POSITION_COMPONENT_COUNT)
+        GLES20.glVertexAttribPointer(COLOR_ATTRIBUTE_INDEX, COLOR_COMPONENT_COUNT, GLES20.GL_FLOAT, false,
+                STRIDE, vertexData)
+
+        GLES20.glEnableVertexAttribArray(POSITION_ATTRIBUTE_INDEX)
+        GLES20.glEnableVertexAttribArray(COLOR_ATTRIBUTE_INDEX)
 
 
         //manager.buildGraphicsProgramAssets("myglsl.vert", "fragment.frag")
